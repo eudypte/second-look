@@ -213,6 +213,12 @@ textarea:disabled {
   text-align: center;
 }
 
+.button-icon {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 auto;
+}
+
 .button:disabled {
   cursor: wait;
   opacity: 0.7;
@@ -315,6 +321,11 @@ textarea:disabled {
   font-weight: 900;
 }
 
+.result-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
 .result-red .result-status,
 .result-red h2 {
   color: var(--red);
@@ -401,6 +412,14 @@ textarea:disabled {
   color: #174e9b;
   font-weight: 700;
   text-underline-offset: 3px;
+}
+
+.dotted-token {
+  display: inline-block;
+  width: max-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  vertical-align: baseline;
 }
 
 .explanation p,

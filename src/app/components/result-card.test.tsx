@@ -30,6 +30,16 @@ describe("ResultCard", () => {
     expect(markup).toContain("Advisory provided by Google");
   });
 
+  it("keeps dotted web-address tokens together", () => {
+    const markup = renderToStaticMarkup(
+      <ResultCard verdict={verdictFixtures.red} />,
+    );
+
+    expect(markup).toContain(
+      '<span class="dotted-token">e-zpassny.com.</span>',
+    );
+  });
+
   it("adds the required caution after a no-flags result", () => {
     const markup = renderToStaticMarkup(
       <ResultCard verdict={verdictFixtures.none} />,
