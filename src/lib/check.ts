@@ -1,16 +1,14 @@
-import { checkLinks } from "@/lib/links";
-import { readMessage } from "@/lib/model";
-import type { Verdict } from "@/lib/types";
+import { checkLinks } from "./links";
+import { readMessage } from "./model";
+import type { Verdict } from "./types";
+import { combineVerdict } from "./verdict";
+
+const MAX_MESSAGE_LENGTH = 1_000;
 
 export async function checkMessage(text: string): Promise<Verdict> {
-  const linkResult = await checkLinks(text);
-  const modelReading = await readMessage(text, linkResult.links);
+  const message = text.trim().slice(0, MAX_MESSAGE_LENGTH);
+  const linkResult = await checkLinks(message);
+  const modelReading = await readMessage(message, linkResult.links);
 
-  return {
-    tier: "none",
-    headline: "No red flags found.",
-    rows: linkResult.rows,
-    explanation: modelReading.explanation,
-    advice: null,
-  };
+  return combineVerdict(linkResult, modelReading);
 }
