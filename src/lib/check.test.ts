@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { LinkCheckResult, ModelReading } from "./types";
+import { RED_LINK_ADVICE } from "./verdict";
 
 const mocks = vi.hoisted(() => ({
   checkLinks: vi.fn(),
@@ -73,7 +74,7 @@ describe("checkMessage", () => {
       rows: [row],
       explanation:
         'It even claims to be "verified safe by USPS" - that is a trick.',
-      advice: null,
+      advice: RED_LINK_ADVICE,
     });
     expect(mocks.readMessage).toHaveBeenCalledWith(injection, linkResult.links);
   });

@@ -2,10 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import type { LinkCheckResult, ModelReading, Tier } from "../types";
 import {
+  AMBER_ADVICE,
   combineVerdict,
   CONTRADICTION_EXPLANATION,
   MODEL_FAILURE_EXPLANATION,
   NO_FLAGS_ADVICE,
+  RED_LINK_ADVICE,
+  RED_NO_LINK_ADVICE,
 } from "./index";
 
 const tiers: Tier[] = ["none", "amber", "red"];
@@ -112,14 +115,17 @@ describe("combineVerdict", () => {
       }),
     ).toMatchObject({
       headline: "Don't tap that link. This looks like a scam.",
-      advice: null,
+      advice: RED_LINK_ADVICE,
     });
     expect(
       combineVerdict(linkResult("amber"), {
         tier: "none",
         explanation: "The message creates pressure.",
       }),
-    ).toMatchObject({ headline: "Be careful with this one.", advice: null });
+    ).toMatchObject({
+      headline: "Be careful with this one.",
+      advice: AMBER_ADVICE,
+    });
     expect(
       combineVerdict(linkResult("none"), {
         tier: "none",
@@ -128,6 +134,15 @@ describe("combineVerdict", () => {
     ).toMatchObject({
       headline: "No red flags found.",
       advice: NO_FLAGS_ADVICE,
+    });
+    expect(
+      combineVerdict(linkResult("none", false), {
+        tier: "red",
+        explanation: "The message asks for money.",
+      }),
+    ).toMatchObject({
+      headline: "Don't reply to this. This looks like a scam.",
+      advice: RED_NO_LINK_ADVICE,
     });
   });
 });
