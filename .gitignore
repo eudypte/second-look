@@ -69,14 +69,26 @@ web_modules/
 .env
 .env.*
 !.env.example
+.env*.local
+
+# Local project instructions and notes
+AGENTS.md
+CLAUDE.md
+notes/
+eval/private/
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-out
+# Next.js
+/.next/
+/out/
+/build
+.vercel
+next-env.d.ts
+.DS_Store
+*.pem
 
 # Nuxt.js build / generate output
 .nuxt
