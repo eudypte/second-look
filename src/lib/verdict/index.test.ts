@@ -83,6 +83,18 @@ describe("combineVerdict", () => {
     },
   );
 
+  it.each([
+    'It claims to be "verified safe" - that is a trick.',
+    "It claims to be ‘legitimate’ - that is a trick.",
+  ])("keeps forbidden words when they only quote the message", (explanation) => {
+    const verdict = combineVerdict(linkResult("red"), {
+      tier: "red",
+      explanation,
+    });
+
+    expect(verdict.explanation).toBe(explanation);
+  });
+
   it("turns an empty model explanation into a failure message", () => {
     const verdict = combineVerdict(linkResult("none", false), {
       tier: "none",
