@@ -47,7 +47,12 @@ function guardedExplanation(explanation: string): string {
     return MODEL_FAILURE_EXPLANATION;
   }
 
-  if (/\b(?:safe|legitimate|verified)\b/i.test(trimmed)) {
+  const unquotedText = trimmed.replace(
+    /"[^"]*"|'[^']*'|“[^”]*”|‘[^’]*’/g,
+    "",
+  );
+
+  if (/\b(?:safe|legitimate|verified)\b/i.test(unquotedText)) {
     return CONTRADICTION_EXPLANATION;
   }
 

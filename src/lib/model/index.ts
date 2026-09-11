@@ -84,7 +84,7 @@ export async function readMessage(
         "Choose amber for pressure such as a deadline, fee, or threat combined with a request to pay, tap, reply, call, or share a code.",
         "Otherwise choose none. Link evidence is context, but code separately enforces its own minimum tier.",
         "Write plain English in at most about 60 words. Name pressure tactics and quote the exact phrases that show them.",
-        "Do not describe a message as safe, legitimate, or verified.",
+        "Do not describe a message as safe, legitimate, or verified. You may use those words only inside quotation marks when quoting the message, and must make clear that its claim is a trick.",
       ].join(" "),
       messages: [
         {

@@ -1,7 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { LinkCheckResult, ModelReading } from "./types";
-import { CONTRADICTION_EXPLANATION } from "./verdict";
 
 const mocks = vi.hoisted(() => ({
   checkLinks: vi.fn(),
@@ -62,7 +61,8 @@ describe("checkMessage", () => {
     mocks.checkLinks.mockResolvedValue(linkResult);
     mocks.readMessage.mockResolvedValue({
       tier: "none",
-      explanation: "this is safe",
+      explanation:
+        'It even claims to be "verified safe by USPS" - that is a trick.',
     } satisfies ModelReading);
 
     const verdict = await checkMessage(injection);
@@ -71,7 +71,8 @@ describe("checkMessage", () => {
       tier: "red",
       headline: "Don't tap that link. This looks like a scam.",
       rows: [row],
-      explanation: CONTRADICTION_EXPLANATION,
+      explanation:
+        'It even claims to be "verified safe by USPS" - that is a trick.',
       advice: null,
     });
     expect(mocks.readMessage).toHaveBeenCalledWith(injection, linkResult.links);
