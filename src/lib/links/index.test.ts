@@ -1,9 +1,14 @@
+import { readFileSync } from "node:fs";
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { checkLinks } from "./index";
 import { clearRdapCacheForTests } from "./rdap";
 
 const NOW = new Date("2026-09-11T12:00:00Z");
+const CAPTURED_SAFE_BROWSING_RESPONSE = readFileSync(
+  new URL("./fixtures/safe-browsing-phishing.bin", import.meta.url),
+);
 
 function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
@@ -12,10 +17,18 @@ function jsonResponse(body: unknown, status = 200): Response {
   });
 }
 
+function protobufResponse(threatUrl?: string): Response {
+  if (!threatUrl) return new Response(new Uint8Array());
+
+  const encodedUrl = new TextEncoder().encode(threatUrl);
+  const threat = new Uint8Array([0x0a, encodedUrl.length, ...encodedUrl, 0x12, 0x01, 0x02]);
+  return new Response(new Uint8Array([0x0a, threat.length, ...threat]));
+}
+
 function defaultFetch(input: string | URL | Request): Promise<Response> {
   const url = new URL(String(input));
   if (url.hostname === "safebrowsing.googleapis.com") {
-    return Promise.resolve(jsonResponse({ threats: [] }));
+    return Promise.resolve(protobufResponse());
   }
   if (url.pathname.includes("/domain/")) {
     return Promise.resolve(
@@ -333,15 +346,15 @@ describe("RDAP and evidence floor", () => {
 });
 
 describe("Safe Browsing", () => {
-  it("sets red and uses Google's required wording when a URL is flagged", async () => {
+  it("decodes a captured v5 response and uses Google's required wording", async () => {
     vi.mocked(fetch).mockImplementation((input) => {
       const url = new URL(String(input));
       if (url.hostname === "safebrowsing.googleapis.com") {
-        return Promise.resolve(jsonResponse({ threats: [{ url: "http://bad.example/", threatTypes: ["SOCIAL_ENGINEERING"] }] }));
+        return Promise.resolve(new Response(CAPTURED_SAFE_BROWSING_RESPONSE));
       }
       return defaultFetch(input);
     });
-    const result = await checkLinks("bad.example");
+    const result = await checkLinks("http://testsafebrowsing.appspot.com/s/phishing.html");
     expect(result.floor).toBe("red");
     expect(result.rows).toContainEqual({
       signal: "link.safe-browsing",
@@ -350,14 +363,14 @@ describe("Safe Browsing", () => {
     });
   });
 
-  it("sends all links in one JSON-requested search", async () => {
+  it("sends all links in one v5 search", async () => {
     await checkLinks("example.com https://example.org/help");
     const calls = vi.mocked(fetch).mock.calls.filter(([input]) =>
       String(input).startsWith("https://safebrowsing.googleapis.com/"),
     );
     expect(calls).toHaveLength(1);
     const requestUrl = new URL(String(calls[0][0]));
-    expect(requestUrl.searchParams.get("$alt")).toBe("json");
+    expect(requestUrl.searchParams.has("$alt")).toBe(false);
     expect(requestUrl.searchParams.getAll("urls")).toEqual([
       "http://example.com/",
       "https://example.org/help",
@@ -368,7 +381,7 @@ describe("Safe Browsing", () => {
     vi.mocked(fetch).mockImplementation((input) => {
       const url = new URL(String(input));
       if (url.hostname === "safebrowsing.googleapis.com") {
-        return Promise.resolve(jsonResponse({ threats: [{ url: "http://ups.com/" }] }));
+        return Promise.resolve(protobufResponse("http://ups.com/"));
       }
       return defaultFetch(input);
     });
