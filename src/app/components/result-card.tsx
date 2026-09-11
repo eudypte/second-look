@@ -8,7 +8,7 @@ const tierDetails: Record<
 > = {
   red: { label: "Strong warning", symbol: "!", className: "result-red" },
   amber: { label: "Use caution", symbol: "!", className: "result-amber" },
-  none: { label: "No red flags", symbol: "i", className: "result-none" },
+  none: { label: "No red flags", symbol: "", className: "result-none" },
 };
 
 const noFlagsAdvice =
@@ -35,6 +35,18 @@ function evidenceText(row: EvidenceRow) {
     .trim();
 }
 
+function wrapDottedTokens(text: string) {
+  return text.split(/(\s+)/).map((token, index) =>
+    /[\p{L}\p{N}-]\.[\p{L}\p{N}-]/u.test(token) ? (
+      <span className="dotted-token" key={`${token}-${index}`}>
+        {token}
+      </span>
+    ) : (
+      token
+    ),
+  );
+}
+
 export function ResultCard({ verdict, onReset }: ResultCardProps) {
   const details = tierDetails[verdict.tier];
   const advice =
@@ -53,7 +65,25 @@ export function ResultCard({ verdict, onReset }: ResultCardProps) {
     >
       <div className="result-status">
         <span className="result-icon" aria-hidden="true">
-          {details.symbol}
+          {verdict.tier === "none" ? (
+            <svg className="result-icon-svg" viewBox="0 0 24 24" fill="none">
+              <circle
+                cx="10.5"
+                cy="10.5"
+                r="5.75"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="m15 15 4.25 4.25"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          ) : (
+            details.symbol
+          )}
         </span>
         <span>{details.label}</span>
       </div>
@@ -70,7 +100,7 @@ export function ResultCard({ verdict, onReset }: ResultCardProps) {
                   {row.tier === "red" ? "!" : "•"}
                 </span>
                 <span>
-                  {evidenceText(row)}
+                  {wrapDottedTokens(evidenceText(row))}
                   {isSafeBrowsingRow(row) ? (
                     <>
                       {" "}

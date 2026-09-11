@@ -127,7 +127,35 @@ export function MessageChecker({ initialVerdict }: MessageCheckerProps) {
             onClick={handlePaste}
             disabled={isChecking}
           >
-            <span aria-hidden="true">▣</span>
+            <svg
+              className="button-icon"
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+            >
+              <path
+                d="M9 5.5h8.5A1.5 1.5 0 0 1 19 7v11.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 7 18.5V17"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <rect
+                x="4"
+                y="3"
+                width="11"
+                height="14"
+                rx="1.5"
+                stroke="currentColor"
+                strokeWidth="2"
+              />
+              <path
+                d="M7 3.5V3a2 2 0 0 1 4 0v.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
             Paste
           </button>
           <button
