@@ -59,7 +59,7 @@ describe("readMessage", () => {
     expect(sdkMocks.create).toHaveBeenCalledTimes(1);
     expect(sdkMocks.constructor).toHaveBeenCalledWith({
       maxRetries: 0,
-      timeout: 10_000,
+      timeout: 30_000,
     });
 
     const request = sdkMocks.create.mock.calls[0][0];

@@ -102,6 +102,24 @@ describe("link extraction and parsing", () => {
     expect(result.floor).toBe("amber");
     expect(signals(result)).toContain("link.ip-address");
   });
+
+  it("ignores run-on typing and abbreviations that have no real public suffix", async () => {
+    for (const text of [
+      "Ok.ok ok..then..whats ur todays plan",
+      "U.S.P.S said the package is late",
+      "Hmm...my bad",
+    ]) {
+      await expect(checkLinks(text)).resolves.toMatchObject({ links: [], floor: "none" });
+    }
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  it("ignores a decimal number that would expand into an address", async () => {
+    await expect(checkLinks("It only costs 7.5 a month")).resolves.toMatchObject({
+      links: [],
+      floor: "none",
+    });
+  });
 });
 
 describe("brand and hosting rules", () => {
@@ -311,25 +329,30 @@ describe("RDAP and evidence floor", () => {
     expect(signals(result)).not.toContain("link.domain-age");
   });
 
-  it("sets amber without fetching RDAP when the TLD has no registry", async () => {
+  it("reports unavailable age data without raising the tier", async () => {
     const result = await checkLinks("example.co");
-    expect(result.floor).toBe("amber");
+    expect(result.floor).toBe("none");
+    expect(result.rows).toContainEqual({
+      signal: "link.domain-age-unknown",
+      tier: "none",
+      text: "I couldn't check how old this website is.",
+    });
     expect(signals(result)).toContain("link.domain-age-unknown");
     expect(vi.mocked(fetch).mock.calls.some(([input]) => String(input).includes("/domain/"))).toBe(false);
   });
 
-  it("sets amber when an RDAP lookup fails", async () => {
+  it("reports an RDAP lookup failure without raising the tier", async () => {
     vi.mocked(fetch).mockImplementation((input) => {
       const url = new URL(String(input));
       if (url.pathname.includes("/domain/")) return Promise.resolve(jsonResponse({}, 503));
       return defaultFetch(input);
     });
     const result = await checkLinks("example.com");
-    expect(result.floor).toBe("amber");
+    expect(result.floor).toBe("none");
     expect(signals(result)).toContain("link.domain-age-unknown");
   });
 
-  it("sets amber when an RDAP lookup times out", async () => {
+  it("reports an RDAP timeout without raising the tier", async () => {
     vi.useFakeTimers();
     vi.mocked(fetch).mockImplementation((input) => {
       const url = new URL(String(input));
@@ -340,7 +363,7 @@ describe("RDAP and evidence floor", () => {
     const pending = checkLinks("timeout-example.com");
     await vi.advanceTimersByTimeAsync(3_000);
     const result = await pending;
-    expect(result.floor).toBe("amber");
+    expect(result.floor).toBe("none");
     expect(signals(result)).toContain("link.domain-age-unknown");
   });
 });
