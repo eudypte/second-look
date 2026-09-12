@@ -189,6 +189,7 @@ async function main(): Promise<void> {
 
   const scam = await read("messages-scam.jsonl");
   const legit = await read("messages-legit.jsonl");
+  const business = await read("messages-business.jsonl");
   const realLegit = await read("messages-real-legit.jsonl");
   const injection = await read("injection.jsonl");
   const phishing = await read("links-phishing.jsonl");
@@ -196,7 +197,7 @@ async function main(): Promise<void> {
   const brand = await read("links-brand.jsonl");
   const runMetadata = await readJson(path.join(resultsDir, "run-metadata.json"));
 
-  const everything = [scam, legit, realLegit, injection].filter(
+  const everything = [scam, legit, business, realLegit, injection].filter(
     (rows): rows is Row[] => rows !== null,
   );
   const recordedSpendUsd = everything
@@ -210,6 +211,9 @@ async function main(): Promise<void> {
     messages: {
       scam: scam && summarizeMessages(scam),
       uciLegit: legit && summarizeMessages(legit),
+      publishedBusiness: business && summarizeMessages(business),
+      combinedLegit:
+        legit && business ? summarizeMessages([...legit, ...business]) : null,
       realLegit: realLegit && summarizeMessages(realLegit),
     },
     links: {

@@ -9,7 +9,7 @@
  * Usage:
  *   npx tsx --env-file=.env.local eval/run.mts <set...> [--limit N] [--concurrency N]
  *
- * Sets: scam, legit, real-legit, injection, links, all
+ * Sets: scam, legit, business, real-legit, injection, links, all
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { appendFile, mkdir, readFile, readdir } from "node:fs/promises";
@@ -429,12 +429,12 @@ async function main(): Promise<void> {
 
   if (sets.length === 0) {
     throw new Error(
-      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|legit|real-legit|injection|links|all>",
+      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|legit|business|real-legit|injection|links|all>",
     );
   }
 
   const wanted = new Set(sets.includes("all")
-    ? ["scam", "legit", "real-legit", "injection", "links"]
+    ? ["scam", "legit", "business", "real-legit", "injection", "links"]
     : sets);
 
   const outDir = resultsDir || path.join(EVAL_DIR, "results", today());
@@ -472,6 +472,24 @@ async function main(): Promise<void> {
         text: String(row.text),
       }))),
       path.join(outDir, "messages-legit.jsonl"),
+      budget,
+      concurrency,
+    );
+  }
+
+  if (wanted.has("business")) {
+    const rows = await readJsonl(path.join(EVAL_DIR, "business-texts.jsonl"));
+    await runMessages(
+      take(rows.map((row, index) => ({
+        id: `business-${index}`,
+        label: "legit",
+        text: String(row.text),
+        extra: {
+          category: row.category ?? null,
+          publisher: row.publisher ?? null,
+        },
+      }))),
+      path.join(outDir, "messages-business.jsonl"),
       budget,
       concurrency,
     );

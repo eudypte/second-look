@@ -6,8 +6,9 @@ Model: `claude-haiku-4-5-20251001`.
 
 ## The honest number
 
-Second Look caught 165 of 200 scam texts, or 82.5% (95% Wilson interval 76.6% to 87.1%), with 2 false alarms among 150 UCI personal texts, or 1.3% (95% Wilson interval 0.4% to 4.7%).
-The harder real business-text set was not present, so there is not yet a defensible combined false-alarm number or an `n = 200` legitimate-text headline.
+Second Look caught 165 of 200 scam texts, or 82.5% (95% Wilson interval 76.6% to 87.1%), with 27 false alarms among 210 legitimate texts, or 12.9% (95% Wilson interval 9.0% to 18.1%).
+The combined number includes 150 UCI personal texts and 60 genuine business messages published as examples by their sending organisations.
+The split matters: false alarms were 1.3% on the easy personal texts and 41.7% on the harder published business texts.
 
 These are the final numbers after the narrow reliability and false-link fixes described below.
 The initial scam run caught 155 of 200, or 77.5% (95% Wilson interval 71.2% to 82.7%), but 12 model reads had failed and 11 of those stopped exactly at the old 10-second timeout.
@@ -18,7 +19,8 @@ The initial scam run caught 155 of 200, or 77.5% (95% Wilson interval 71.2% to 8
 | --- | ---: | ---: | ---: | ---: |
 | IMC scam texts | 165/200, 82.5% (76.6% to 87.1%) | 107/200, 53.5% (46.6% to 60.3%) | 1/200 | 3.8 s |
 | UCI personal texts | 2/150, 1.3% (0.4% to 4.7%) | 0/150, 0.0% (0.0% to 2.5%) | 0/150 | 3.4 s |
-| Private real business texts | not available | not available | not available | not available |
+| Published business texts | 25/60, 41.7% (30.1% to 54.3%) | 2/60, 3.3% (0.9% to 11.4%) | 0/60 | 3.5 s |
+| Combined legitimate texts | 27/210, 12.9% (9.0% to 18.1%) | 2/210, 1.0% (0.3% to 3.4%) | 0/210 | 3.4 s |
 
 The remaining model failure was `scam-96`, whose targeted rerun returned HTTP 400.
 It remains a miss in the published result rather than being retried until it passes.
@@ -113,19 +115,48 @@ Most misses are first-contact wrong-number messages whose scam intent only becom
 - `scam-165`: The request for a precious-metals price list resembles a normal business inquiry at this stage.
 - `scam-166`: The text complains about a lack of replies but contains no financial, credential, or urgent action request.
 
-## Flagged legitimate texts
+## Flagged UCI personal texts
 
 - `legit-75`: A chain-message game says "ACCEPT DAY" and "No rply means enemy," which resembles a deadline plus a threat to force a reply.
 - `legit-83`: A confusing question asking whether the recipient knows an unknown number was interpreted as pressure to confirm contact information.
 
+## Flagged published business texts
+
+- `business-0` (USPS): A routine pickup notice asks the recipient to reply `STOP`, which the model treated as pressured interaction.
+- `business-3` (USPS): A delivery-exception update was misread as authority impersonation and an implied request even though it only confirms an existing request.
+- `business-6` (River City Bank): A real fraud alert combines a suspicious transaction with a `YES` or `NO` reply request, matching the model's phishing-pressure pattern.
+- `business-9` (Freedom Bank): A real card alert combines a dollar amount with a `YES` or `NO` reply request, and the generated explanation was replaced because it used prohibited reassurance wording.
+- `business-11` (Freedom Bank): A publisher's generic template contains the literal placeholder `(Insert financial institution name here)`, which made the real example look fabricated and produced a red verdict.
+- `business-12` (Farmers and Merchants Bank): A real fraud-center message pairs a transaction amount with an immediate `YES` or `NO` reply request.
+- `business-13` (Farmers and Merchants Bank): A routine opt-out confirmation asks the recipient to reply `UNDO`, which was treated as suspicious interaction.
+- `business-14` (Commerce Bank): A legitimate check-fraud alert includes a large masked amount, a reply request, and a phone number, closely matching phishing language.
+- `business-15` (Certified Federal Credit Union): A genuine suspicious-transaction alert asks for an immediate `YES` or `NO` response and uses a generic institution placeholder.
+- `business-16` (Tulsa Federal Credit Union): A real fraud alert was rated red because its suspicious-transaction warning and `YES` or `NO` reply request closely match bank phishing tactics.
+- `business-17` (Centra Credit Union): A legitimate card alert combines a dollar amount, card suffix, and requested response, which the model treated as manufactured urgency.
+- `business-18` (7 17 Credit Union): A genuine debit-card alert asks the recipient to validate a transaction by reply, matching the system's pressure-plus-action rule.
+- `business-19` (7 17 Credit Union): A real fraud-department message requests a `YES` or `NO` response, and the generated explanation was replaced because it used prohibited reassurance wording.
+- `business-21` (People's Electric Cooperative): An address-selection prompt includes an account number and asks for a one-letter reply, which was misread as a request for sensitive information.
+- `business-25` (Fairfax Connector): A transit text opt-in asks for confirmation and mentions possible message rates, which the model interpreted as urgency plus a fee.
+- `business-34` (Login.gov): A normal login code includes a ten-minute expiry and an official domain, but the time limit and code language triggered amber.
+- `business-35` (Login.gov): A real account-security alert says access was restricted and directs the user to emailed next steps, matching an account-takeover lure.
+- `business-36` (Login.gov): A real identity-verification alert says access was restricted, and the generated explanation was replaced because it used prohibited reassurance wording.
+- `business-40` (Washington State DSHS): A benefits reminder requests proof of work activities and supplies an official link, which resembles a benefits-loss threat plus action.
+- `business-41` (Washington State DSHS): Two official `rb.gy` short links could not be resolved, so deterministic link evidence set an amber floor.
+- `business-42` (Washington State DSHS): A genuine EBT theft warning says `Act immediately!` and advises changing a PIN through official channels, matching the model's threat-and-action rule.
+- `business-48` (Washington State Health Care Authority): A real health-coverage renewal notice combines an end-of-month deadline with an official website request.
+- `business-50` (Washington State Health Care Authority): A genuine eligibility-review notice warns about staying insured and requests renewal by month end.
+- `business-54` (Washington State Health Care Authority): A real Medicaid enrollment message says `Act now` and supplies a renewal deadline and official domain.
+- `business-58` (Pennsylvania Department of Human Services): A genuine benefits renewal notice gives a five-day deadline and asks the recipient to log in, closely matching phishing pressure.
+
 ## Cost and limitations
 
-The retained raw evaluation records contain $0.3188 of model usage, and superseded targeted runs add $0.0473, for $0.3661 of measured evaluation spend.
-Including the manual page checks whose token usage was not instrumented, total API spend stayed below $0.38 and well below the $5 cap.
+The retained raw evaluation records contain $0.3679 of model usage, and superseded targeted runs add $0.0473, for $0.4152 of measured evaluation spend.
+Including the manual page checks whose token usage was not instrumented, total API spend stayed below $0.43 and well below the $5 cap.
 The link evaluation made no model calls.
 
 This is a small evaluation, so the confidence intervals remain wide and the precise rates should not be treated as population estimates.
 The scam messages are historical reports from 2017 through 2024, and their links were replaced by `<URL>`, which removes much of Second Look's deterministic advantage and makes the injection floor test unusually weak.
 The UCI legitimate texts are mostly easy personal messages collected around 2012, not the business alerts most likely to resemble scams.
-The private real business-text set had not been supplied, so its false-alarm placeholder remains empty and the planned balanced `n = 200` headline cannot yet be reported.
+The 60 business texts are genuine wording published by the organisations that send them, but they are idealised examples rather than messages collected from real inboxes.
+Published examples tend to have clean formatting and canonical wording, so the measured 41.7% business false-alarm rate may still understate problems on messier received texts.
 The OpenPhish snapshot represents one day and its link results can change as domains age and blocklists update.
