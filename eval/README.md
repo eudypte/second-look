@@ -9,6 +9,7 @@ They cover suspicious-message classification and deterministic link checks witho
 | --- | ---: | --- |
 | `scam-texts.jsonl` | 200 | English scam messages from the IMC 2025 smishing dataset |
 | `legitimate-texts.jsonl` | 150 | Random legitimate messages from the UCI SMS Spam Collection |
+| `business-texts.jsonl` | 54 | Real US business and transactional texts quoted from the pages where each organisation published them |
 | `tranco-links.jsonl` | 100 | Random lower-ranked Tranco domains used as legitimate link cases |
 | `brand-links.jsonl` | 50 | Hand-curated official shipping, shopping, banking, telecom, government, account, and health links |
 | `scam-review.json` | 1 review manifest | Approved source rows plus every rejected scam candidate and its reason |
@@ -97,6 +98,92 @@ The review manifest gives the exact reason for every dropped source row and lock
 The UCI sample shuffles all `ham` rows with seed `second-look-uci-ham-v1` and takes 150.
 The Tranco sample keeps ranks 100,001 through 1,000,000, shuffles them with seed `second-look-tranco-Y8YQG-v1`, and takes 100.
 The OpenPhish sample deduplicates the 300-URL snapshot, shuffles it with seed `second-look-openphish-2026-09-11-v1`, and takes 150.
+
+## Business texts: the hard false-alarm set
+
+`business-texts.jsonl` holds 54 real US business and transactional text messages, quoted from the pages where the sending organisation published them.
+It exists because `legitimate-texts.jsonl` is 2012 personal chat, which is the easy case.
+The messages people actually receive every week carry the same surface features a scam checker keys on: urgency, a shortened link, a dollar amount, a phone number, a reply keyword, an account or tracking number.
+Seventeen of the 54 contain a link or a bare domain and ten contain a dollar amount, so this is the set that decides whether Second Look cries wolf on a bank fraud alert, an outage text, or a Medicaid renewal reminder.
+
+Report the false-alarm rate for this file separately from the UCI personal messages.
+
+### Record format
+
+```json
+{"text":"...","label":"legit","category":"banking","publisher":"River City Bank","sourceUrl":"https://...","source":"business-texts-published-examples","provenance":"published-example","note":"optional"}
+```
+
+`category` is one of `delivery`, `banking`, `utility`, `travel`, `appointment`, and `government`.
+`publisher` is the organisation that both sends and published the message.
+`sourceUrl` is the page or PDF the message was quoted from; every record has one.
+`note` records anything that needs saying about a specific message, such as whose placeholder appears in it.
+
+### Where every message came from
+
+| Publisher | Records | Category | Source |
+| --- | ---: | --- | --- |
+| USPS | 6 | delivery | [Text Tracking FAQs](https://www.usps.com/text-tracking/welcome.htm) |
+| River City Bank | 4 | banking | [Text Fraud Alert System](https://rivercitybank.com/text-fraud-alert-system/) |
+| Freedom Bank (Montana) | 4 | banking | [Text alerts from Freedom Bank](https://www.freedombankmt.com/text-alerts-from-freedom-bank/) |
+| Farmers and Merchants Bank | 2 | banking | [Card Text Alerts](https://www.fmbms.com/Card-Text-Alerts) |
+| Commerce Bank | 1 | banking | [Text for Check Fraud](https://www.commercebank.com/security-center/text-for-check-fraud) |
+| Town & Country Bank and Trust Co. | 1 | banking | [SecurLOCK Communicate instructions (PDF)](https://www.mytcbt.bank/assets/files/jls7fqUS/SecurLOCK_Communicate_Instructions.pdf) |
+| Certified Federal Credit Union | 1 | banking | [Text Message Alert](https://www.certifiedfed.com/text-message-alert/) |
+| Tulsa Federal Credit Union | 1 | banking | [Debit card alerts flyer (PDF)](https://www.dfcutulsa.com/DFCU-Tulsa-Debit-Card-Alerts-Flyer.pdf) |
+| People's Electric Cooperative | 5 | utility | [Outage texting flyer (PDF)](https://www.peopleselectric.coop/wp-content/uploads/outage-texting.pdf) |
+| Fairfax Connector | 2 | travel | [BusTracker by Text](https://www.fairfaxcounty.gov/connector/bustracker/text) |
+| Centro | 1 | travel | [Track by Text](https://www.centro.org/how-to-ride/transit-tools/track-by-text) |
+| Orange County Transportation Authority | 1 | travel | [Text4Next](https://octa.net/Text4Next/) |
+| University Health, San Antonio | 1 | appointment | [MyChart text messaging](https://www.universityhealth.com/patient-visitor-resources/patients/patient-portal/mychart/text-messaging) |
+| Washington State DSHS | 19 | government | [Text Messages from DSHS](https://www.dshs.wa.gov/text) |
+| Washington State Health Care Authority | 5 | government | [Apple Health text messages](https://www.hca.wa.gov/about-hca/programs-and-initiatives/apple-health-medicaid/apple-health-text-messages) |
+
+Three messages were transcribed from a phone screenshot the publisher put on its own page rather than from page text: the two Fairfax Connector messages, the Centro message, and the University Health confirmation.
+Those records say so in their `note`.
+
+### Rules the set was built under
+
+Every message is quoted exactly as the organisation printed it.
+No message was written, paraphrased, completed, or reworded, and nothing was carried over from a third party's blog post or an SMS vendor's template gallery.
+Placeholders that appear in the text, such as USPS's `01123456789123456789`, Commerce Bank's `Check#XXXXXXXXXXX`, Freedom Bank's `888-XXX-XXXX`, and DSHS's `Xxxxx` and `$x.xx`, are the publisher's own; none were introduced here.
+Phone numbers were left in place because every one of them is the publisher's public customer-service or fraud-department line, printed by the publisher in the same example.
+The one edit anywhere in the file is on the Orange County Transportation Authority record: OCTA prints each line of the reply followed by a parenthetical explanation of that line, and those explanations were dropped.
+
+Two banking records, Town & Country Bank and Trust and Tulsa Federal Credit Union, use the same card-processor wording as the River City Bank alert under a different name.
+They were kept on purpose so the banking rows are not all one brand, and their `note` says what they are.
+
+### Why no dataset was used
+
+No public dataset of real, legitimate, US business text messages was found that could be redistributed here.
+What was checked and rejected:
+
+- [UCI SMS Spam Collection](https://archive.ics.uci.edu/dataset/228/sms+spam+collection): CC BY 4.0 and already used in `legitimate-texts.jsonl`, but its `ham` rows are 2012 personal chat from UK and Singapore contributors, which is the easy case this file exists to replace.
+- [Mishra and Soni SMS phishing](https://data.mendeley.com/datasets/f45bkkt8pr/1) (5,971 rows, 2022, CC BY 4.0): downloaded and inspected. Its 4,844 `ham` rows are the same personal-chat corpus, with rupee amounts, British slang, and Nigerian postal references. Not US business texts.
+- [alusci/sms-otp-spam-dataset](https://huggingface.co/datasets/alusci/sms-otp-spam-dataset) (10,000 rows, MIT, 2025): US-style one-time-code messages, but the dataset card states the whole set is synthetic. Rejected as model-generated.
+- [AbayomiAlli/SMS-Spam-Dataset](https://github.com/AbayomiAlli/SMS-Spam-Dataset) (5,240 rows): collected from twenty university users in Nigeria, and the repository states no license. Rejected on both counts.
+- [NUS SMS Corpus](https://arxiv.org/abs/1112.2468): about 10,000 legitimate messages, but Singaporean and overwhelmingly personal.
+- Hugging Face search for transactional, business, OTP, and smishing SMS returned only the UCI derivatives, synthetic sets, and non-US corpora (Korean, Bengali, Azerbaijani, and African smishing collections).
+- Kaggle's bank-transaction SMS sets are non-US and carry no usable license statement.
+
+### Limitations
+
+Published examples are idealised.
+An organisation writing its own help page prints the clean, canonical version of a message: correct capitalisation, no truncation, no carrier-inserted prefix, no mid-sentence line break, and often a rounded or masked account number.
+Real received texts are messier, so a false-alarm rate measured here is a floor, not a guarantee.
+
+The set is unbalanced.
+Twenty-four of the 54 records come from two Washington State agencies, because government agencies publish the exact wording of their texts far more often than companies do.
+Banking is the next largest block at 14, and it leans on one card processor's wording across five institutions.
+
+Three of the categories the set was meant to cover are missing entirely, and not for lack of looking:
+
+- **Login and verification codes.** No first-party page was found that quotes the code message itself. Companies describe the message and publish the short code it comes from, but do not print the text. The one quotable version found, an Xfinity code message, was posted by a customer on the Xfinity forum rather than by Xfinity, so it was rejected.
+- **Tolls and parking.** Toll authorities have responded to the toll-scam wave by publishing what they will never do rather than what they do send. E-ZPass New York, SunPass, NC Quick Pass, Illinois Tollway, and the PA Turnpike all name their short code and warn about scams; none prints a real alert.
+- **Marketing.** Retail and restaurant SMS programs publish terms and conditions without a sample message. Everything returned by searching for one was an SMS vendor's template gallery, which is invented copy, not a message any company actually sent.
+
+Because of those gaps, the file has no record that is purely promotional, and the link-bearing records skew toward government benefit reminders rather than delivery tracking.
+The honest read is that this set tests whether Second Look over-flags official transactional messages, and that a checker which passes it has not yet been tested against a real Amazon delivery text or a real bank one-time code.
 
 ## Metrics
 
