@@ -202,8 +202,22 @@ The honest read is that this set tests whether Second Look over-flags official t
 Message catch rate is the share of scam texts rated amber or red.
 Message false-alarm rate is the share of legitimate texts rated amber or red.
 Report the same two metrics with red as the only positive result.
-Report the false-alarm rate for UCI personal messages and the private real business texts separately, because the business texts are the harder legitimate cases.
+Report the false-alarm rate for UCI personal messages and the published business texts separately, because the business texts are the harder legitimate cases.
+If a private real-inbox set is present, report it separately from both committed sets.
 
 Link catch rate is the share of phishing URLs flagged by at least one deterministic signal.
 Report it overall, by signal, and without blocklists, where the last version uses only domain-age, brand-lookalike, and hosting rules.
 Only aggregate OpenPhish results may be published.
+
+## Running the evaluation
+
+Place the required API keys in `.env.local`, then run the message and link sets through the shipped checks:
+
+```sh
+npx tsx --env-file=.env.local eval/run.mts all --results-dir eval/results/YYYY-MM-DD
+npx tsx eval/summarize.mts --results-dir eval/results/YYYY-MM-DD
+```
+
+The runner uses `checkMessage` for message records and `checkLinks` for link records.
+It writes one JSON line after each completed record, skips IDs already present when resumed, prints cumulative spend, and stops scheduling work after the $5 cap is reached.
+Use `--concurrency` to change the default message concurrency of two and `--delay-ms` to control pacing between single-threaded link records.

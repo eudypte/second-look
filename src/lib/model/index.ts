@@ -6,7 +6,7 @@ export const MODEL_ID =
   process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5-20251001";
 
 const MAX_OUTPUT_TOKENS = 180;
-const MODEL_TIMEOUT_MS = 10_000;
+const MODEL_TIMEOUT_MS = 30_000;
 const MAX_EXPLANATION_WORDS = 60;
 
 const readingSchema = {

@@ -107,7 +107,7 @@ export async function checkLinks(text: string): Promise<LinkCheckResult> {
 
     if (age?.status === "unknown") {
       evidence.push(
-        row("link.domain-age-unknown", "amber", "I couldn't check how old this website is."),
+        row("link.domain-age-unknown", "none", "I couldn't check how old this website is."),
       );
     } else if (age?.status === "found" && age.ageDays <= 90) {
       const tier: Tier = age.ageDays < 30 && riskContext ? "red" : "amber";
