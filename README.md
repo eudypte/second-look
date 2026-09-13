@@ -6,16 +6,16 @@ Second Look helps non-technical people check a worrying text message and underst
 
 ## Results
 
-In the evaluation:
+These numbers are for the prompt the app ships with, measured on held-out halves that were not used while writing the model instructions:
 
-- Scam catch rate: 165 of 200 IMC scam texts were rated amber or red, or 82.5%; 107 of 200 were red, or 53.5%.
-- Personal-text false-alarm rate: 2 of 150 UCI personal texts were rated amber or red, or 1.3%; none were red.
-- Business-text false-alarm rate: 25 of 60 published business texts were rated amber or red, or 41.7%; 2 of 60 were red, or 3.3%.
-- Combined false-alarm rate: 27 of 210 legitimate texts were rated amber or red, or 12.9%; 2 of 210 were red, or 1.0%.
+- Scam catch rate: 84 of 100 held-out IMC scam texts were rated amber or red, or 84.0%; 67 of 100 were red, or 67.0%.
+- Business-text false-alarm rate: 3 of 30 held-out published business texts were rated amber or red, or 10.0%; none were red.
+- Personal-text false-alarm rate: 3 of 150 UCI personal texts were rated amber or red, or 2.0%; 2 of 150 were red, or 1.3%.
+- Combined false-alarm rate: 6 of 180 genuine texts were rated amber or red, or 3.3%; 2 of 180 were red, or 1.1%.
 
 On link-only tests, the code flagged 92 of 150 OpenPhish links, or 61.3%, including 81, or 54.0%, without Google Safe Browsing; it also flagged 3 of 100 lower-ranked Tranco domains and none of 50 official brand links.
 
-See [the full evaluation write-up](eval/RESULTS.md) for confidence intervals, methods, failure analysis, and limitations.
+See [the full evaluation write-up](eval/RESULTS.md) for confidence intervals, the method, the earlier prompt versions, failure analysis, and caveats.
 
 ## How it works
 
