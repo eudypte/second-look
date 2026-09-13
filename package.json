@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "start": "next start",
     "build": "next build",
     "check-links": "tsx src/lib/links/check-links.ts",
     "lint": "eslint",
