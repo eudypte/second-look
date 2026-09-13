@@ -30,13 +30,35 @@ describe("ResultCard", () => {
     expect(markup).toContain("Advisory provided by Google");
   });
 
-  it("keeps dotted web-address tokens together", () => {
+  it("keeps web addresses and hyphenated names together", () => {
     const markup = renderToStaticMarkup(
       <ResultCard verdict={verdictFixtures.red} />,
     );
 
     expect(markup).toContain(
-      '<span class="dotted-token">e-zpassny.com.</span>',
+      '<span class="unbroken-token">e-zpassny.com.</span>',
+    );
+    expect(markup).toContain('<span class="unbroken-token">E-ZPass&#x27;s</span>');
+  });
+
+  it("styles informational evidence neutrally", () => {
+    const markup = renderToStaticMarkup(
+      <ResultCard
+        verdict={{
+          ...verdictFixtures.red,
+          rows: [
+            {
+              signal: "domain-age-unknown",
+              tier: "none",
+              text: "I couldn't check how old this website is.",
+            },
+          ],
+        }}
+      />,
+    );
+
+    expect(markup).toContain(
+      'class="evidence-marker evidence-marker-none" aria-hidden="true">i</span>',
     );
   });
 

@@ -400,12 +400,20 @@ textarea:disabled {
   line-height: 1;
 }
 
-.result-red .evidence-marker {
+.evidence-marker-red {
   background: var(--red);
 }
 
-.result-amber .evidence-marker {
+.evidence-marker-amber {
   background: var(--amber);
+}
+
+.result-card .evidence-marker-none {
+  border: 2px solid #7d8881;
+  color: var(--muted);
+  background: transparent;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 14px;
 }
 
 .evidence-list a {
@@ -414,7 +422,7 @@ textarea:disabled {
   text-underline-offset: 3px;
 }
 
-.dotted-token {
+.unbroken-token {
   display: inline-block;
   width: max-content;
   max-width: 100%;

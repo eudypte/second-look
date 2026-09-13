@@ -35,10 +35,11 @@ function evidenceText(row: EvidenceRow) {
     .trim();
 }
 
-function wrapDottedTokens(text: string) {
+function wrapRiskTokens(text: string) {
   return text.split(/(\s+)/).map((token, index) =>
-    /[\p{L}\p{N}-]\.[\p{L}\p{N}-]/u.test(token) ? (
-      <span className="dotted-token" key={`${token}-${index}`}>
+    /[\p{L}\p{N}-]\.[\p{L}\p{N}-]/u.test(token) ||
+    /[\p{L}\p{N}]['’\p{L}\p{N}]*-[\p{L}\p{N}]/u.test(token) ? (
+      <span className="unbroken-token" key={`${token}-${index}`}>
         {token}
       </span>
     ) : (
@@ -96,11 +97,14 @@ export function ResultCard({ verdict, onReset }: ResultCardProps) {
           <ul className="evidence-list">
             {verdict.rows.map((row, index) => (
               <li key={`${row.signal}-${index}`}>
-                <span className="evidence-marker" aria-hidden="true">
-                  {row.tier === "red" ? "!" : "•"}
+                <span
+                  className={`evidence-marker evidence-marker-${row.tier}`}
+                  aria-hidden="true"
+                >
+                  {row.tier === "red" ? "!" : row.tier === "none" ? "i" : "•"}
                 </span>
                 <span>
-                  {wrapDottedTokens(evidenceText(row))}
+                  {wrapRiskTokens(evidenceText(row))}
                   {isSafeBrowsingRow(row) ? (
                     <>
                       {" "}
@@ -123,7 +127,7 @@ export function ResultCard({ verdict, onReset }: ResultCardProps) {
 
       <div className="explanation">
         <h3>Why we think that</h3>
-        <p>{explanation}</p>
+        <p>{wrapRiskTokens(explanation)}</p>
       </div>
 
       {advice ? (
