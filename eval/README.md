@@ -10,6 +10,8 @@ They cover suspicious-message classification and deterministic link checks witho
 | `scam-texts.jsonl` | 200 | English scam messages from the IMC 2025 smishing dataset |
 | `legitimate-texts.jsonl` | 150 | Random legitimate messages from the UCI SMS Spam Collection |
 | `business-texts.jsonl` | 60 | Real US business and transactional texts quoted from the pages where each organisation published them |
+| `business-split.json` | 1 split manifest | Deterministic 30-record dev and 30-record held-out partitions of the published business texts |
+| `scam-split.json` | 1 split manifest | Deterministic 100-record dev and 100-record held-out partitions of the scam texts |
 | `tranco-links.jsonl` | 100 | Random lower-ranked Tranco domains used as legitimate link cases |
 | `brand-links.jsonl` | 50 | Hand-curated official shipping, shopping, banking, telecom, government, account, and health links |
 | `scam-review.json` | 1 review manifest | Approved source rows plus every rejected scam candidate and its reason |
@@ -151,17 +153,35 @@ Those records say so in their `note`.
 
 ### Rules the set was built under
 
-Every message is quoted exactly as the organisation printed it.
-No message was written, paraphrased, completed, or reworded, and nothing was carried over from a third party's blog post or an SMS vendor's template gallery.
+Every message is quoted exactly as the organisation printed it except for the two documented institution-name substitutions below.
+No message was written, paraphrased, completed, or otherwise reworded, and nothing was carried over from a third party's blog post or an SMS vendor's template gallery.
 Where a search turned up a quotable message on a security-awareness page, it was used only if that page was published by the sender itself; a customer-posted Xfinity code message on Xfinity's own forum was rejected on that basis, and so were several bank alerts that turned out to be the scam example on the page rather than the real one.
 
 Placeholders that appear in the text, such as USPS's `01123456789123456789`, Commerce Bank's `Check#XXXXXXXXXXX`, Freedom Bank's `888-XXX-XXXX`, VA's capitalised `CLINIC at LOCATION on DATE`, and DSHS's `Xxxxx` and `$x.xx`, are the publisher's own; none were introduced here.
 Phone numbers were left in place because every one of them is the publisher's public customer-service or fraud-department line, printed by the publisher in the same example.
 
-Two records involved a documented transformation, and only two:
+Four records involved a documented transformation, and only four:
+
+- **Freedom Bank and Certified Federal Credit Union.** The institution-name placeholders in the publishers' templates were rendered as `Freedom Bank` and `Certified Federal Credit Union`, respectively.
+  This follows the set's placeholder policy by using realistic, source-consistent values instead of leaving template artifacts that a recipient would never see.
 
 - **Orange County Transportation Authority.** OCTA prints each line of the reply followed by a parenthetical explanation of that line. The explanations were dropped; the message lines are unchanged.
 - **Login.gov.** Login.gov is the sign-in service behind IRS, SSA, VA and other federal accounts, and it publishes the text of every message it sends in its own public source repository as an internationalisation template. The five records here are rendered from those templates using the service's own values: app name `Login.gov`, the ten-minute code expiry Login.gov documents, its `secure.login.gov` sign-in domain, and a placeholder six-digit code. Each record's `note` says so, and the source URL is pinned to the commit the templates were read at.
+
+### Development and held-out split
+
+`business-split.json` fixes the evaluation split before the prompt change.
+Records are sorted by the lowercase hexadecimal SHA-256 digest of their original UTF-8 text, with generated record ID as the tie-breaker.
+The first 30 are the development half and the remaining 30 are held out.
+The hashes use the original text before the two documented institution-name substitutions so the data cleanup cannot change partition membership.
+Only the development half may be used while writing or revising the model instructions.
+The held-out half is evaluated once the prompt is frozen and supplies the reported business false-alarm evidence.
+
+`scam-split.json` fixes the scam split the same way before the second prompt revision.
+Records are sorted by the lowercase hexadecimal SHA-256 digest of their UTF-8 text, with generated record ID as the tie-breaker, and the first 100 are the development half.
+Only the development halves of both the scam and business sets may be run while writing or revising the model instructions.
+The held-out scam half is evaluated once the prompt is frozen and supplies the reported scam catch evidence.
+The runner accepts `scam-dev`, `scam-heldout`, `business-dev`, and `business-heldout` as set names.
 
 ### Why no dataset was used
 

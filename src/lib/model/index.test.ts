@@ -80,6 +80,25 @@ describe("readMessage", () => {
     expect(request.messages[0].content).toContain(
       "This website was set up 45 days ago.",
     );
+    expect(request.system).toContain("Genuine alerts tell you what happened");
+    expect(request.system).toContain(
+      "a keyword reply such as YES, NO, STOP, HELP, or one letter; a call to the number on the back of your card",
+    );
+    expect(request.system).toContain(
+      "Do not treat those requests as suspicious, even alongside a fraud warning",
+    );
+    expect(request.system).toContain(
+      "use a link or an unfamiliar number in the message to verify, sign in, pay, claim a prize or refund, reschedule or release a delivery",
+    );
+    expect(request.system).toContain(
+      "Choose red for a new-number, broken-phone, or family-emergency story from an unknown sender even before money is mentioned",
+    );
+    expect(request.system).toContain(
+      "Choose amber for any other risky request, even when the message sounds routine",
+    );
+    expect(request.system).not.toContain(
+      "If no risky action is requested, choose none",
+    );
   });
 
   it("caps explanations at 60 words", async () => {

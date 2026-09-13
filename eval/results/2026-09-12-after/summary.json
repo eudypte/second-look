@@ -1,0 +1,144 @@
+{
+  "generatedAt": "2026-09-13T02:07:59.456Z",
+  "model": "claude-haiku-4-5-20251001",
+  "messages": {
+    "scam": {
+      "tiers": {
+        "none": 49,
+        "amber": 83,
+        "red": 68
+      },
+      "flaggedRate": {
+        "n": 200,
+        "hits": 151,
+        "rate": 0.755,
+        "wilson95": [
+          0.6909575644220239,
+          0.8094313191211443
+        ]
+      },
+      "redRate": {
+        "n": 200,
+        "hits": 68,
+        "rate": 0.34,
+        "wilson95": [
+          0.2779154596954552,
+          0.4081150447480472
+        ]
+      },
+      "modelFailures": 3,
+      "modelFailureReasons": {
+        "http-500": 1,
+        "http-400": 2
+      },
+      "guardedExplanations": 4,
+      "medianMs": 3753,
+      "maxMs": 16451,
+      "costUsd": 0.20575000000000015
+    },
+    "uciLegit": {
+      "tiers": {
+        "none": 150,
+        "amber": 0,
+        "red": 0
+      },
+      "flaggedRate": {
+        "n": 150,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.02497024437950352
+        ]
+      },
+      "redRate": {
+        "n": 150,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.02497024437950352
+        ]
+      },
+      "modelFailures": 0,
+      "modelFailureReasons": {},
+      "guardedExplanations": 0,
+      "medianMs": 3418,
+      "maxMs": 7031,
+      "costUsd": 0.14487999999999998
+    },
+    "publishedBusiness": null,
+    "publishedBusinessHeldOut": {
+      "tiers": {
+        "none": 30,
+        "amber": 0,
+        "red": 0
+      },
+      "flaggedRate": {
+        "n": 30,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.11351339322119766
+        ]
+      },
+      "redRate": {
+        "n": 30,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.11351339322119766
+        ]
+      },
+      "modelFailures": 0,
+      "modelFailureReasons": {},
+      "guardedExplanations": 9,
+      "medianMs": 3858,
+      "maxMs": 6139,
+      "costUsd": 0.031194000000000006
+    },
+    "combinedLegit": {
+      "tiers": {
+        "none": 180,
+        "amber": 0,
+        "red": 0
+      },
+      "flaggedRate": {
+        "n": 180,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.02089549793121524
+        ]
+      },
+      "redRate": {
+        "n": 180,
+        "hits": 0,
+        "rate": 0,
+        "wilson95": [
+          0,
+          0.02089549793121524
+        ]
+      },
+      "modelFailures": 0,
+      "modelFailureReasons": {},
+      "guardedExplanations": 9,
+      "medianMs": 3462,
+      "maxMs": 7031,
+      "costUsd": 0.17607399999999995
+    },
+    "realLegit": null
+  },
+  "links": {
+    "phishing": null,
+    "tranco": null,
+    "brand": null
+  },
+  "injection": null,
+  "spendUsd": 0.5018550000000004,
+  "recordedSpendUsd": 0.4130060000000004,
+  "supersededSpendUsd": 0.088849
+}
