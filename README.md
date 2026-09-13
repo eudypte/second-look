@@ -6,7 +6,7 @@ Second Look helps non-technical people check a worrying text message and underst
 
 ## Results
 
-In the September 2026 evaluation:
+In the evaluation:
 
 - Scam catch rate: 165 of 200 IMC scam texts were rated amber or red, or 82.5%; 107 of 200 were red, or 53.5%.
 - Personal-text false-alarm rate: 2 of 150 UCI personal texts were rated amber or red, or 1.3%; none were red.
@@ -92,11 +92,3 @@ npx tsx eval/summarize.mts --results-dir eval/results/YYYY-MM-DD
 - OpenPhish-derived links are kept private under the [OpenPhish terms](https://openphish.com/terms.html); only aggregate evaluation results are published.
 
 See [the evaluation data notes](eval/README.md) for exact source revisions, sampling, licenses, and attribution details.
-
-## Limitations
-
-This is a small evaluation, and the historical scam texts have their links replaced with placeholders, removing much of the advantage of the deterministic checks.
-The personal-message control set is mostly easy conversation from around 2012, while the published business examples are cleaner and more canonical than real inbox messages.
-The OpenPhish sample represents one day, and link results can change as domains age and blocklists update.
-
-Live: coming soon
