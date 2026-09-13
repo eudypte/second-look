@@ -2,6 +2,8 @@
 
 Second Look helps non-technical people check a worrying text message and understand the evidence behind the answer.
 
+Live: [secondlook.selimd.me](https://secondlook.selimd.me)
+
 ![A phone-width red result for a toll scam with an E-ZPass lookalike link](docs/screenshots/red-result.png)
 
 ## Results
