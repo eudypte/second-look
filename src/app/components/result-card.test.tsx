@@ -58,8 +58,33 @@ describe("ResultCard", () => {
     );
 
     expect(markup).toContain(
-      'class="evidence-marker evidence-marker-none" aria-hidden="true">i</span>',
+      'class="evidence-marker evidence-marker-none" viewBox="0 0 48 48" aria-hidden="true"',
     );
+    expect(markup).not.toContain("evidence-marker-red");
+  });
+
+  it("highlights the pressure phrases quoted in the explanation", () => {
+    const markup = renderToStaticMarkup(
+      <ResultCard verdict={verdictFixtures.red} />,
+    );
+
+    expect(markup).toContain(
+      'saying <mark class="quoted-phrase">&quot;final notice&quot;</mark> and',
+    );
+  });
+
+  it("keeps the no-flags sign to its label and headline", () => {
+    const markup = renderToStaticMarkup(
+      <ResultCard verdict={verdictFixtures.none} />,
+    );
+    const sign = markup.slice(
+      markup.indexOf('class="sign"'),
+      markup.indexOf('class="result-body"'),
+    );
+
+    expect(sign).toContain("No red flags found.");
+    expect(sign).not.toContain("safe");
+    expect(markup).toMatch(/What to do<\/h2><p>That doesn&#x27;t mean it&#x27;s safe\./);
   });
 
   it("adds the required caution after a no-flags result", () => {

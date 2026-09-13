@@ -1,5 +1,13 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { Overpass } from "next/font/google";
 import "./globals.css";
+
+const overpass = Overpass({
+  subsets: ["latin"],
+  weight: ["400", "600", "800", "900"],
+  variable: "--font-overpass",
+  fallback: ["Helvetica Neue", "Arial", "sans-serif"],
+});
 
 export const metadata: Metadata = {
   title: "Second Look | Check a worrying text message",
@@ -13,11 +21,15 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  themeColor: "#1c2226",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={overpass.variable}>
       <body>{children}</body>
     </html>
   );

@@ -1,14 +1,13 @@
+import { Fragment } from "react";
 import type { EvidenceRow, Tier, Verdict } from "@/lib/types";
+import { TierShape } from "./tier-shape";
 
 const SAFE_BROWSING_URL = "https://safebrowsing.google.com/";
 
-const tierDetails: Record<
-  Tier,
-  { label: string; symbol: string; className: string }
-> = {
-  red: { label: "Strong warning", symbol: "!", className: "result-red" },
-  amber: { label: "Use caution", symbol: "!", className: "result-amber" },
-  none: { label: "No red flags", symbol: "", className: "result-none" },
+const tierDetails: Record<Tier, { label: string; className: string }> = {
+  red: { label: "Strong warning", className: "result-red" },
+  amber: { label: "Use caution", className: "result-amber" },
+  none: { label: "No red flags", className: "result-none" },
 };
 
 const noFlagsAdvice =
@@ -48,6 +47,18 @@ function wrapRiskTokens(text: string) {
   );
 }
 
+function highlightQuotes(text: string) {
+  return text.split(/("[^"]*"|“[^”]*”)/).map((part, index) =>
+    index % 2 === 1 ? (
+      <mark className="quoted-phrase" key={index}>
+        {wrapRiskTokens(part)}
+      </mark>
+    ) : (
+      <Fragment key={index}>{wrapRiskTokens(part)}</Fragment>
+    ),
+  );
+}
+
 export function ResultCard({ verdict, onReset }: ResultCardProps) {
   const details = tierDetails[verdict.tier];
   const advice =
@@ -64,86 +75,84 @@ export function ResultCard({ verdict, onReset }: ResultCardProps) {
       aria-labelledby="result-headline"
       aria-live="polite"
     >
-      <div className="result-status">
-        <span className="result-icon" aria-hidden="true">
-          {verdict.tier === "none" ? (
-            <svg className="result-icon-svg" viewBox="0 0 24 24" fill="none">
-              <circle
-                cx="10.5"
-                cy="10.5"
-                r="5.75"
-                stroke="currentColor"
-                strokeWidth="2"
-              />
-              <path
-                d="m15 15 4.25 4.25"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-            </svg>
-          ) : (
-            details.symbol
-          )}
-        </span>
-        <span>{details.label}</span>
+      <div className="sign">
+        <div className="result-status">
+          <TierShape tier={verdict.tier} use="sign" className="result-icon" />
+          <span>{details.label}</span>
+        </div>
+        <h1 id="result-headline" tabIndex={-1}>
+          {verdict.headline}
+        </h1>
       </div>
 
-      <h2 id="result-headline">{verdict.headline}</h2>
+      <div className="result-body">
+        {verdict.rows.length > 0 ? (
+          <div className="evidence-section">
+            <h2>What stood out</h2>
+            <ul className="evidence-list">
+              {verdict.rows.map((row, index) => (
+                <li key={`${row.signal}-${index}`}>
+                  <TierShape
+                    tier={row.tier}
+                    use="row"
+                    className={`evidence-marker evidence-marker-${row.tier}`}
+                  />
+                  <span>
+                    {wrapRiskTokens(evidenceText(row))}
+                    {isSafeBrowsingRow(row) ? (
+                      <>
+                        {" "}
+                        <a
+                          href={SAFE_BROWSING_URL}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          Advisory provided by Google
+                        </a>
+                        .
+                      </>
+                    ) : null}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
-      {verdict.rows.length > 0 ? (
-        <div className="evidence-section">
-          <h3>What stood out</h3>
-          <ul className="evidence-list">
-            {verdict.rows.map((row, index) => (
-              <li key={`${row.signal}-${index}`}>
-                <span
-                  className={`evidence-marker evidence-marker-${row.tier}`}
-                  aria-hidden="true"
-                >
-                  {row.tier === "red" ? "!" : row.tier === "none" ? "i" : "•"}
-                </span>
-                <span>
-                  {wrapRiskTokens(evidenceText(row))}
-                  {isSafeBrowsingRow(row) ? (
-                    <>
-                      {" "}
-                      <a
-                        href={SAFE_BROWSING_URL}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        Advisory provided by Google
-                      </a>
-                      .
-                    </>
-                  ) : null}
-                </span>
-              </li>
-            ))}
-          </ul>
+        <div className="explanation">
+          <h2>Why we think that</h2>
+          <p>{highlightQuotes(explanation)}</p>
         </div>
-      ) : null}
-
-      <div className="explanation">
-        <h3>Why we think that</h3>
-        <p>{wrapRiskTokens(explanation)}</p>
       </div>
 
-      {advice ? (
-        <div className="advice">
-          <strong>What to do</strong>
-          <p>{advice}</p>
-        </div>
-      ) : null}
+      <div className="result-aside">
+        {advice ? (
+          <div className="advice">
+            <h2>
+              <svg className="advice-icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M4 12h12M11 6l6 6-6 6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
+              What to do
+            </h2>
+            <p>{advice}</p>
+          </div>
+        ) : null}
 
-      <button
-        className="button button-primary result-reset"
-        type="button"
-        onClick={onReset}
-      >
-        Check another message
-      </button>
+        <button
+          className="button button-primary result-reset"
+          type="button"
+          onClick={onReset}
+        >
+          Check another message
+        </button>
+      </div>
     </section>
   );
 }
