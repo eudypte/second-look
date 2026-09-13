@@ -6,35 +6,61 @@ Model: `claude-haiku-4-5-20251001`.
 
 ## The honest number
 
-After the prompt was frozen, Second Look flagged 0 of 30 held-out genuine business texts, a 0.0% false-alarm rate (95% Wilson interval 0.0% to 11.4%).
-The same 30 records had 9 false alarms before the change, or 30.0% (16.7% to 47.9%).
+Three prompt versions have been measured: the original, a first pass that cut business false alarms, and a second pass that restored scam detection.
+Every "after" number below comes from held-out records that were not run while the prompt they measure was being written.
+
+With the second-pass prompt frozen, Second Look caught 84 of 100 held-out scam texts, or 84.0% (95% Wilson interval 75.6% to 89.9%).
+The same 100 records were caught 80 times by the original prompt, 80.0% (71.1% to 86.7%), and 74 times by the first pass, 74.0% (64.6% to 81.6%).
+Red verdicts on those 100 rose from 54 originally and 38 after the first pass to 67, or 67.0% (57.3% to 75.4%).
+
+The second pass gave back part of the business improvement.
+It flagged 3 of 30 held-out genuine business texts, a 10.0% false-alarm rate (3.5% to 25.6%).
+The same 30 records had 9 false alarms with the original prompt, 30.0% (16.7% to 47.9%), and 0 after the first pass, 0.0% (0.0% to 11.4%).
 The original published full-set baseline remains visible: 25 of 60 business texts were flagged, or 41.7% (30.1% to 54.3%).
 
-The improvement did hurt measured scam detection.
-The scam catch rate fell from 165 of 200, or 82.5% (76.6% to 87.1%), before to 151 of 200, or 75.5% (69.1% to 80.9%), after.
-That is a decrease of 14 caught messages and 7.0 percentage points.
-
-Using only the held-out business half plus all 150 UCI personal texts, the comparable combined legitimate false-alarm rate fell from 11 of 180, or 6.1% (3.4% to 10.6%), before to 0 of 180, or 0.0% (0.0% to 2.1%), after.
+Using the held-out business half plus all 150 UCI personal texts, the combined legitimate false-alarm rate is 6 of 180, or 3.3% (1.5% to 7.1%).
+It was 11 of 180, or 6.1% (3.4% to 10.6%), originally and 0 of 180, or 0.0% (0.0% to 2.1%), after the first pass.
 The original combined baseline across all 60 business texts plus UCI was 27 of 210, or 12.9% (9.0% to 18.1%).
 
-The deterministic 30-record development half was used to write and revise the prompt.
-Its result is therefore not reported as evidence.
-The held-out half was not run or inspected after partitioning until the prompt was frozen.
-The first frozen-prompt held-out run exposed a duplicated generic `Bank` label in one substituted template.
-The rendering was corrected and the full held-out half was rerun without changing the prompt; both runs are retained and included in spend.
+### Which records were used to write each prompt
+
+- First pass: only the 30-record business development half was run while writing the prompt.
+  The full 200 scam texts, the held-out business half, and UCI were run once after it was frozen.
+- Second pass: only the 100-record scam development half and the 30-record business development half were run while writing the prompt, over four iterations.
+  The held-out 100 scams, the held-out 30 business texts, and all 150 UCI texts were then run once with the prompt frozen.
+- The development halves are therefore not reported as evidence.
+  For reference only, the frozen second-pass prompt caught 86 of 100 development scams and flagged 3 of 30 development business texts.
+- One caveat is stated plainly: the second pass was motivated by reviewing the first pass's misses across all 200 scams, so the broad patterns it targets (link-driven delivery and account-hold messages, new-number stories) were known from records that are now in the held-out half.
+  No held-out record was run or inspected while the second-pass wording was being written.
+- The held-out business results from the first pass had also been seen before the second pass began.
 
 ## Message results
 
-| Set | Before amber or red | After amber or red | Before red only | After red only | After model failures | After median wall time |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| IMC scam texts | 165/200, 82.5% (76.6% to 87.1%) | 151/200, 75.5% (69.1% to 80.9%) | 107/200, 53.5% (46.6% to 60.3%) | 68/200, 34.0% (27.8% to 40.8%) | 3/200 | 3.8 s |
-| UCI personal texts | 2/150, 1.3% (0.4% to 4.7%) | 0/150, 0.0% (0.0% to 2.5%) | 0/150, 0.0% (0.0% to 2.5%) | 0/150, 0.0% (0.0% to 2.5%) | 0/150 | 3.4 s |
-| Published business texts, held-out half | 9/30, 30.0% (16.7% to 47.9%) | 0/30, 0.0% (0.0% to 11.4%) | 1/30, 3.3% (0.6% to 16.7%) | 0/30, 0.0% (0.0% to 11.4%) | 0/30 | 3.9 s |
-| Combined legitimate texts, UCI plus held-out business | 11/180, 6.1% (3.4% to 10.6%) | 0/180, 0.0% (0.0% to 2.1%) | 1/180, 0.6% (0.1% to 3.1%) | 0/180, 0.0% (0.0% to 2.1%) | 0/180 | 3.5 s |
+Held-out records only.
+The scam row uses the held-out 100 scams for all three prompts, so its original and first-pass numbers differ from the full 200-record figures quoted in earlier versions of this file.
 
-The after scam run had three model failures: `scam-63` returned HTTP 500, while `scam-98` and `scam-131` returned HTTP 400.
-All three remain misses rather than being retried until they pass.
-The longest successful or failed after-run message check took 16.5 seconds.
+| Set | Original amber or red | First pass amber or red | Second pass amber or red |
+| --- | ---: | ---: | ---: |
+| IMC scam texts, held-out half | 80/100, 80.0% (71.1% to 86.7%) | 74/100, 74.0% (64.6% to 81.6%) | 84/100, 84.0% (75.6% to 89.9%) |
+| UCI personal texts | 2/150, 1.3% (0.4% to 4.7%) | 0/150, 0.0% (0.0% to 2.5%) | 3/150, 2.0% (0.7% to 5.7%) |
+| Published business texts, held-out half | 9/30, 30.0% (16.7% to 47.9%) | 0/30, 0.0% (0.0% to 11.4%) | 3/30, 10.0% (3.5% to 25.6%) |
+| Combined legitimate texts, UCI plus held-out business | 11/180, 6.1% (3.4% to 10.6%) | 0/180, 0.0% (0.0% to 2.1%) | 6/180, 3.3% (1.5% to 7.1%) |
+
+| Set | Original red only | First pass red only | Second pass red only |
+| --- | ---: | ---: | ---: |
+| IMC scam texts, held-out half | 54/100, 54.0% (44.3% to 63.4%) | 38/100, 38.0% (29.1% to 47.8%) | 67/100, 67.0% (57.3% to 75.4%) |
+| UCI personal texts | 0/150, 0.0% (0.0% to 2.5%) | 0/150, 0.0% (0.0% to 2.5%) | 2/150, 1.3% (0.4% to 4.7%) |
+| Published business texts, held-out half | 1/30, 3.3% (0.6% to 16.7%) | 0/30, 0.0% (0.0% to 11.4%) | 0/30, 0.0% (0.0% to 11.4%) |
+| Combined legitimate texts, UCI plus held-out business | 1/180, 0.6% (0.1% to 3.1%) | 0/180, 0.0% (0.0% to 2.1%) | 2/180, 1.1% (0.3% to 4.0%) |
+
+For the full 200 scams, the original prompt caught 165, or 82.5% (76.6% to 87.1%), with 107 red, and the first pass caught 151, or 75.5% (69.1% to 80.9%), with 68 red.
+The second pass was not run on all 200 as evidence, because half of them were used to write it.
+
+The second-pass frozen runs had no model failures on any held-out or UCI record.
+Two development-half scam records returned HTTP 500 during the final development iteration, and the first pass had three failures across all 200 scams, one of them in the held-out half.
+Failures stay as misses rather than being retried until they pass.
+Median wall time in the second-pass frozen runs was 5.5 seconds for scams and 5.1 seconds for legitimate texts, with a maximum of 7.1 seconds.
+Those runs used three concurrent requests instead of two, so their timings are not comparable with the 3.4 to 3.9 second medians of the earlier runs.
 
 ## Link results
 
@@ -70,6 +96,7 @@ All 50 source messages came from a historical dataset in which links were replac
 The final tier fell below the evidence floor in 0 of 50 cases.
 Forty-nine of 50 injected messages remained red.
 This confirms that the combining code enforces the floor, but this sample does not demonstrate protection from a live link signal because the source links were stripped.
+The injection check was measured with the original prompt and has not been rerun for either prompt revision.
 
 ## Changes made after failure review
 
@@ -92,75 +119,82 @@ The false-alarm follow-up made one small model-instruction change after determin
 - The two publisher institution-name placeholders were replaced with realistic institution names before live evaluation, as documented in `eval/README.md` and each record's `note`.
   One replacement initially duplicated the template's following generic `Bank` label; the data rendering was corrected and the held-out half was rerun with the prompt still frozen.
 
+The first pass over-corrected, so a second pass revised the same instructions after deterministically splitting the scam set.
+
+- Of the first pass's new misses, most were link-driven delivery, reschedule, customs, account-hold, and tax-refund messages, plus new-number stories that the first pass's "if no risky action is requested, choose none" line had overridden.
+- The prompt now says genuine alerts tell you what happened, and when they ask for anything it is a keyword reply, a call to the number on the back of your card, a check of an email they sent, or a visit to the organization's own named website or office.
+- It defines risky requests once: using a link or unfamiliar number in the message to verify, sign in, pay, claim a prize or refund, reschedule or release a delivery, confirm details, or fix or unlock something; sharing a code, password, or card number; or sending money or gift cards.
+- Red covers a new-number, broken-phone, or family-emergency story from an unknown sender even before money is mentioned, gift-card or wire demands, threats, and an account, card, refund, or package hold paired with a risky request.
+  Amber covers any other risky request, even when the message sounds routine.
+- Four iterations were run on the development halves only.
+  The third iteration added a sentence exempting information and feedback links; it raised development business false alarms from 3 to 5 without helping scams, so it was removed.
+  The frozen fourth iteration is the second iteration's wording with gift-card and wire demands restored to red, rerun on the development halves before freezing.
+- No keyword allowlist, link rule, or evidence-floor change was made.
+
 ## Missed scams
 
-Every final `none` result is listed below.
-Most misses are first-contact wrong-number messages whose scam intent only becomes apparent later in a conversation, and the system was not tuned to flag ordinary greetings merely to improve this score.
+Every final `none` result on the 100 held-out scams with the frozen second-pass prompt is listed below.
+All 16 are first-contact messages or fragments with no request yet, and 15 of them were also missed by both earlier prompts.
+The system was not tuned to flag ordinary greetings merely to improve this score.
 
-- `scam-9`: The standalone text only reports a failed delivery attempt and requests no action.
-- `scam-13`: The delivery message's rescheduling link was treated as a routine service task rather than a risky action.
-- `scam-15`: The delivery fragment ends before giving any link or explicit action for setting preferences.
-- `scam-29`: The customs-delay fragment says more information may be needed but ends before supplying an action.
-- `scam-33`: The delivery fragment mentions setting preferences but ends before supplying a link or explicit request.
-- `scam-53`: The entire message is an IRS-themed PDF filename with no call to action.
-- `scam-59`: The message is only an IRS-themed PDF filename and file-size fragment with no call to action.
-- `scam-63`: The model call returned HTTP 500, and the dataset's stripped link left no deterministic evidence floor.
-- `scam-75`: The row is only a bank account number and account name, with no request, pressure, or stated reason to transfer money.
-- `scam-98`: The model call returned HTTP 400, and the dataset's stripped link left no deterministic evidence floor.
-- `scam-126`: The message ends immediately after offering a freebie, so the action or link that would reveal the lure is missing.
-- `scam-127`: The generic AT&T notification asks the recipient to visit a link but gives no pressure or sensitive purpose.
-- `scam-131`: The model call returned HTTP 400 on a reward message with no deterministic evidence floor.
+- `scam-59`: The message is only an IRS-themed PDF filename and file-size fragment with no call to action; the original prompt rated it red.
 - `scam-134`: The standalone text says an apparent acquaintance is bringing a cake and contains no request or pressure.
 - `scam-135`: The standalone text is a friendly greeting with no request, pressure, or money cue.
-- `scam-136`: The text asks why the recipient is busy and contains no financial or credential request.
-- `scam-137`: The item-availability question ends with the incomplete token `https`, so there is no usable link or later scam step.
-- `scam-138`: The house-availability question ends with the incomplete token `https` and otherwise reads like an ordinary inquiry.
 - `scam-139`: The entire first-contact message is the ordinary greeting "How are you doing."
 - `scam-140`: The text only expresses interest in a house and has no payment, link, or urgency cue.
-- `scam-141`: The sender asks for a job reference based on a claimed past date, but does not yet ask for money, credentials, or urgent action.
-- `scam-142`: The text is only an apology for a wrong number, before any rapport-building or financial request appears.
-- `scam-143`: The claimed dating-app reconnection asks to meet for drinks but contains no immediate pressure or sensitive request.
-- `scam-144`: The entire message is the ordinary check-in "Are you OK?"
+- `scam-141`: The sender asks about a claimed past date but does not yet ask for money, credentials, or urgent action.
+- `scam-143`: The claimed dating-app reconnection contains no immediate pressure or sensitive request.
 - `scam-145`: The standalone text is a casual check-in with no request beyond conversation.
 - `scam-146`: The standalone text is an ordinary greeting addressed to Anne.
-- `scam-147`: The advertisement question ends with the incomplete token `https`, leaving no usable link or scam action.
-- `scam-148`: The exchange contains a wrong-number apology but no later rapport or money request.
 - `scam-149`: The standalone text is a generic "long time no see" greeting.
-- `scam-150`: The text only asks whether the recipient is a named person and claims uncertainty about the number.
 - `scam-151`: The golf-acquaintance opener establishes false familiarity but makes no request beyond confirming identity.
 - `scam-152`: The text only says the sender saw a Facebook property listing and makes no risky request.
-- `scam-153`: The entire message is "Hi."
-- `scam-155`: The property-viewing request ends with the incomplete token `http`, leaving no usable link or later scam step.
-- `scam-156`: The Oprah-related opener uses curiosity but does not yet request a tap, reply, payment, or code.
 - `scam-157`: The text asks why the recipient is busy and contains no financial or credential request.
-- `scam-158`: The sender claims familiarity but provides no new-number story, money request, or urgent action.
-- `scam-159`: The contact-update message asks the recipient to add a new number but makes no financial or credential request.
 - `scam-160`: The compliment about a skirt asks only for a conversation when convenient.
-- `scam-161`: The extended wrong-number exchange builds rapport and asks where the recipient is from, but contains no pressure or financial ask.
 - `scam-162`: The standalone text is an ordinary pickup-time question.
-- `scam-163`: The entire message is the identity claim "It's me jiyong."
-- `scam-164`: The message shares a Snapchat handle but contains no urgency, payment request, or credential request.
-- `scam-165`: The request for a precious-metals price list resembles a normal business inquiry at this stage.
 - `scam-166`: The text complains about a lack of replies but contains no financial, credential, or urgent action request.
-- `scam-169`: The new-number message requests WhatsApp contact but makes no financial or credential request.
-- `scam-176`: The message says the sender has a new phone but requests no action.
-- `scam-190`: The new-number message asks only that the recipient save the contact.
-- `scam-191`: The broken-phone story asks for a WhatsApp reply but makes no financial or credential request.
+
+Ten held-out scams missed by the first pass are caught by the second pass:
+
+- `scam-15` and `scam-33`: FedEx messages asking the recipient to set delivery preferences, now amber.
+- `scam-75`: A bare bank account number and account name, now amber.
+- `scam-98`: A Citi account hold with a link, now red; the first pass had failed with HTTP 400 on this record.
+- `scam-142`, `scam-150`, and `scam-161`: Wrong-number and false-familiarity openers, now red under the unknown-sender rule.
+- `scam-155`: A property-viewing request ending in a broken `http` token, now amber.
+- `scam-159`: A long-time-no-see coronavirus story asking the recipient to add a new number, now red.
+- `scam-190`: A new-number message asking a parent to save the contact, now red.
+
+Development-half misses are not listed, because that half was used to write the prompt.
+One of them is worth noting as a dataset limitation: `scam-77` asks for a debit PIN through a link, but the model rated it none because the dataset's `<URL>` placeholder is not a real link.
 
 ## Flagged UCI personal texts
 
-After: none of the 150 UCI personal texts were flagged.
+Second pass: these three of 150 were flagged.
 
-Before, these two were flagged:
+- `legit-46` (amber): An enthusiastic thank-you note with unusual capitalisation; the explanation says it contains no risky request but suggests caution about spoofing, so the tier contradicts its own reasoning.
+- `legit-54` (red): A friend's "come down if you can" pub invitation signed with a nickname was read as a family-emergency story from an unknown sender.
+- `legit-83` (red): A confusing question asking whether the recipient knows a number was read as the opening of a new-number scam.
+
+The unknown-sender red rule is the main cost of the second pass on personal texts: without a contact list, a casual message from a real friend can look like the first message of a family-emergency scam.
+
+First pass: none of the 150 UCI personal texts were flagged.
+
+Original, these two were flagged:
 
 - `legit-75`: A chain-message game says "ACCEPT DAY" and "No rply means enemy," which resembles a deadline plus a threat to force a reply.
 - `legit-83`: A confusing question asking whether the recipient knows an unknown number was interpreted as pressure to confirm contact information.
 
 ## Flagged published business texts
 
-After: none of the 30 held-out business texts were flagged.
+Second pass: these three of the 30 held-out business texts were flagged, all by the model alone.
 
-Before, these 25 records were flagged in the original full 60-record baseline:
+- `business-2` (USPS, amber): The terse "Alert update has been applied" tracking notice was read as vague wording meant to prompt a tap or reply.
+- `business-14` (Commerce Bank, amber): A check-fraud alert offering a `YES` or `NO` reply or a call to a printed number was still treated as pressure toward an unfamiliar number.
+- `business-33` (Charles George VAMC Pharmacy, amber): A refill reminder with a `Y` reply, a phone number, and an official website was flagged; its explanation was replaced by the verdict guard.
+
+First pass: none of the 30 held-out business texts were flagged.
+
+Original, these 25 records were flagged in the full 60-record baseline:
 
 - `business-0` (USPS): A routine pickup notice asks the recipient to reply `STOP`, which the model treated as pressured interaction.
 - `business-3` (USPS): A delivery-exception update was misread as authority impersonation and an implied request even though it only confirms an existing request.
@@ -190,16 +224,18 @@ Before, these 25 records were flagged in the original full 60-record baseline:
 
 ## Cost and limitations
 
-The false-alarm follow-up spent $0.5019, including all three development iterations, the frozen scam and UCI runs, and both frozen-prompt held-out runs around the institution-name rendering correction.
-Together with the $0.4152 before evaluation, measured model usage is $0.9171.
-Including the earlier manual page checks whose token usage was not instrumented, total API spend stayed below $0.94 and well below the $3 cap for this follow-up.
+The second pass spent $0.8535: $0.5610 across the four development iterations, of which $0.4214 was the three superseded iterations, and $0.2925 for the frozen held-out scam, held-out business, and UCI runs.
+The false-alarm first pass spent $0.5019 and the original evaluation $0.4152, so measured model usage across all three is $1.7706.
+The second pass stayed under its $2 cap.
 The link evaluation made no model calls.
 
 This is a small evaluation, so the confidence intervals remain wide and the precise rates should not be treated as population estimates.
+The held-out halves are small: the 10.0% business false-alarm rate rests on 3 of 30 records, and its interval runs from 3.5% to 25.6%.
+The differences between the three prompts on the held-out business and UCI sets are within run-to-run noise of a few records; the same development records flipped between tiers across iterations with small wording changes.
 The scam messages are historical reports from 2017 through 2024, and their links were replaced by `<URL>`, which removes much of Second Look's deterministic advantage and makes the injection floor test unusually weak.
 The UCI legitimate texts are mostly easy personal messages collected around 2012, not the business alerts most likely to resemble scams.
 The 60 business texts are genuine wording published by the organisations that send them, but they are idealised examples rather than messages collected from real inboxes.
-Published examples tend to have clean formatting and canonical wording, so the held-out 0.0% business false-alarm rate may still understate problems on messier received texts.
-Its 95% Wilson interval reaches 11.4%, reflecting the small 30-record held-out sample.
+Published examples tend to have clean formatting and canonical wording, so the held-out business false-alarm rate may still understate problems on messier received texts.
+The verdict guard replaced the model's explanation on 17 of the 30 held-out business texts in the second pass, up from 9 in the first pass, most likely because the model described genuine alerts in words the page is not allowed to use; those readers see the generic contradiction sentence instead of a specific explanation.
 The scam corpus strips or truncates many links and includes first-contact fragments whose malicious action appears later, which limits how directly its catch rate predicts live performance.
 The OpenPhish snapshot represents one day and its link results can change as domains age and blocklists update.

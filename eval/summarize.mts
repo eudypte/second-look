@@ -191,6 +191,8 @@ async function main(): Promise<void> {
   const read = (name: string) => readJsonl(path.join(resultsDir, name));
 
   const scam = await read("messages-scam.jsonl");
+  const scamDev = await read("messages-scam-dev.jsonl");
+  const scamHeldOut = await read("messages-scam-heldout.jsonl");
   const legit = await read("messages-legit.jsonl");
   const business = await read("messages-business.jsonl");
   const businessDev = await read("messages-business-dev.jsonl");
@@ -204,6 +206,8 @@ async function main(): Promise<void> {
 
   const everything = [
     scam,
+    scamDev,
+    scamHeldOut,
     legit,
     business,
     businessDev,
@@ -223,6 +227,7 @@ async function main(): Promise<void> {
     model: MODEL_ID,
     messages: {
       scam: scam && summarizeMessages(scam),
+      scamHeldOut: scamHeldOut && summarizeMessages(scamHeldOut),
       uciLegit: legit && summarizeMessages(legit),
       publishedBusiness: business && summarizeMessages(business),
       publishedBusinessHeldOut:

@@ -11,6 +11,7 @@ They cover suspicious-message classification and deterministic link checks witho
 | `legitimate-texts.jsonl` | 150 | Random legitimate messages from the UCI SMS Spam Collection |
 | `business-texts.jsonl` | 60 | Real US business and transactional texts quoted from the pages where each organisation published them |
 | `business-split.json` | 1 split manifest | Deterministic 30-record dev and 30-record held-out partitions of the published business texts |
+| `scam-split.json` | 1 split manifest | Deterministic 100-record dev and 100-record held-out partitions of the scam texts |
 | `tranco-links.jsonl` | 100 | Random lower-ranked Tranco domains used as legitimate link cases |
 | `brand-links.jsonl` | 50 | Hand-curated official shipping, shopping, banking, telecom, government, account, and health links |
 | `scam-review.json` | 1 review manifest | Approved source rows plus every rejected scam candidate and its reason |
@@ -175,6 +176,12 @@ The first 30 are the development half and the remaining 30 are held out.
 The hashes use the original text before the two documented institution-name substitutions so the data cleanup cannot change partition membership.
 Only the development half may be used while writing or revising the model instructions.
 The held-out half is evaluated once the prompt is frozen and supplies the reported business false-alarm evidence.
+
+`scam-split.json` fixes the scam split the same way before the second prompt revision.
+Records are sorted by the lowercase hexadecimal SHA-256 digest of their UTF-8 text, with generated record ID as the tie-breaker, and the first 100 are the development half.
+Only the development halves of both the scam and business sets may be run while writing or revising the model instructions.
+The held-out scam half is evaluated once the prompt is frozen and supplies the reported scam catch evidence.
+The runner accepts `scam-dev`, `scam-heldout`, `business-dev`, and `business-heldout` as set names.
 
 ### Why no dataset was used
 

@@ -80,26 +80,24 @@ describe("readMessage", () => {
     expect(request.messages[0].content).toContain(
       "This website was set up 45 days ago.",
     );
+    expect(request.system).toContain("Genuine alerts tell you what happened");
     expect(request.system).toContain(
-      "Genuine alerts often ask for a short keyword reply",
+      "a keyword reply such as YES, NO, STOP, HELP, or one letter; a call to the number on the back of your card",
     );
     expect(request.system).toContain(
-      "Judge only actions the message explicitly requests",
+      "Do not treat those requests as suspicious, even alongside a fraud warning",
     );
     expect(request.system).toContain(
-      "A warning not to share a code is protective",
+      "use a link or an unfamiliar number in the message to verify, sign in, pay, claim a prize or refund, reschedule or release a delivery",
     );
     expect(request.system).toContain(
-      "If no risky action is requested, choose none even when the message reports something alarming",
+      "Choose red for a new-number, broken-phone, or family-emergency story from an unknown sender even before money is mentioned",
     );
     expect(request.system).toContain(
-      "use a link to verify, pay, sign in, claim money, or fix an unexpected problem",
+      "Choose amber for any other risky request, even when the message sounds routine",
     );
-    expect(request.system).toContain(
-      "call an unfamiliar number supplied in the message to fix a problem",
-    );
-    expect(request.system).toContain(
-      "Do not flag a link merely because it appears with urgency",
+    expect(request.system).not.toContain(
+      "If no risky action is requested, choose none",
     );
   });
 

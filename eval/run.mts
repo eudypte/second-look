@@ -9,7 +9,7 @@
  * Usage:
  *   npx tsx --env-file=.env.local eval/run.mts <set...> [--limit N] [--concurrency N]
  *
- * Sets: scam, legit, business, business-dev, business-heldout,
+ * Sets: scam, scam-dev, scam-heldout, legit, business, business-dev, business-heldout,
  * real-legit, injection, links, all
  */
 import { AsyncLocalStorage } from "node:async_hooks";
@@ -95,6 +95,16 @@ globalThis.fetch = async function instrumentedFetch(input, init) {
 
   if (!response.ok) {
     usage.modelIssue = `http-${response.status}`;
+    try {
+      const body = (await response.clone().json()) as {
+        error?: { message?: string };
+      };
+      if (body.error?.message) {
+        usage.modelIssue += `: ${body.error.message.slice(0, 160)}`;
+      }
+    } catch {
+      // The status alone is still recorded.
+    }
     return response;
   }
 
@@ -251,9 +261,31 @@ interface MessageJob {
   extra?: Record<string, unknown>;
 }
 
-interface BusinessSplit {
+/** A deterministic dev and held-out partition, written once before prompt work. */
+interface Split {
   dev: string[];
   heldOut: string[];
+}
+
+function scamJob(row: Row, index: number): MessageJob {
+  return {
+    id: `scam-${index}`,
+    label: "scam",
+    text: String(row.text),
+    extra: { type: row.type ?? null, brand: row.brand ?? null },
+  };
+}
+
+function businessJob(row: Row, index: number): MessageJob {
+  return {
+    id: `business-${index}`,
+    label: "legit",
+    text: String(row.text),
+    extra: {
+      category: row.category ?? null,
+      publisher: row.publisher ?? null,
+    },
+  };
 }
 
 async function runMessages(
@@ -435,7 +467,7 @@ async function main(): Promise<void> {
 
   if (sets.length === 0) {
     throw new Error(
-      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|legit|business|business-dev|business-heldout|real-legit|injection|links|all>",
+      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|scam-dev|scam-heldout|legit|business|business-dev|business-heldout|real-legit|injection|links|all>",
     );
   }
 
@@ -457,12 +489,7 @@ async function main(): Promise<void> {
   if (wanted.has("scam")) {
     const rows = await readJsonl(path.join(EVAL_DIR, "scam-texts.jsonl"));
     await runMessages(
-      take(rows.map((row, index) => ({
-        id: `scam-${index}`,
-        label: "scam",
-        text: String(row.text),
-        extra: { type: row.type ?? null, brand: row.brand ?? null },
-      }))),
+      take(rows.map(scamJob)),
       path.join(outDir, "messages-scam.jsonl"),
       budget,
       concurrency,
@@ -486,48 +513,34 @@ async function main(): Promise<void> {
   if (wanted.has("business")) {
     const rows = await readJsonl(path.join(EVAL_DIR, "business-texts.jsonl"));
     await runMessages(
-      take(rows.map((row, index) => ({
-        id: `business-${index}`,
-        label: "legit",
-        text: String(row.text),
-        extra: {
-          category: row.category ?? null,
-          publisher: row.publisher ?? null,
-        },
-      }))),
+      take(rows.map(businessJob)),
       path.join(outDir, "messages-business.jsonl"),
       budget,
       concurrency,
     );
   }
 
-  if (wanted.has("business-dev") || wanted.has("business-heldout")) {
-    const rows = await readJsonl(path.join(EVAL_DIR, "business-texts.jsonl"));
+  for (const name of ["scam", "business"] as const) {
+    if (!wanted.has(`${name}-dev`) && !wanted.has(`${name}-heldout`)) continue;
+
+    const rows = await readJsonl(path.join(EVAL_DIR, `${name}-texts.jsonl`));
+    const jobs = rows.map(name === "scam" ? scamJob : businessJob);
     const split = JSON.parse(
-      await readFile(path.join(EVAL_DIR, "business-split.json"), "utf8"),
-    ) as BusinessSplit;
-    const jobs = rows.map((row, index) => ({
-      id: `business-${index}`,
-      label: "legit",
-      text: String(row.text),
-      extra: {
-        category: row.category ?? null,
-        publisher: row.publisher ?? null,
-      },
-    }));
+      await readFile(path.join(EVAL_DIR, `${name}-split.json`), "utf8"),
+    ) as Split;
     const allSplitIds = [...split.dev, ...split.heldOut];
     const knownIds = new Set(jobs.map((job) => job.id));
     if (
-      split.dev.length !== 30 ||
-      split.heldOut.length !== 30 ||
+      split.dev.length !== jobs.length / 2 ||
+      split.heldOut.length !== jobs.length / 2 ||
       new Set(allSplitIds).size !== jobs.length ||
       allSplitIds.some((id) => !knownIds.has(id))
     ) {
-      throw new Error("business split must contain every record exactly once");
+      throw new Error(`${name} split must contain every record exactly once`);
     }
 
     for (const partition of ["dev", "heldout"] as const) {
-      const setName = `business-${partition}`;
+      const setName = `${name}-${partition}`;
       if (!wanted.has(setName)) continue;
 
       const ids = new Set(partition === "dev" ? split.dev : split.heldOut);
