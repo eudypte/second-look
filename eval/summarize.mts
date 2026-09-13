@@ -46,7 +46,10 @@ function proportion(hits: number, n: number): Proportion {
     n,
     hits,
     rate: p,
-    wilson95: [Math.max(0, centre - half), Math.min(1, centre + half)],
+    wilson95: [
+      centre - half <= Number.EPSILON ? 0 : centre - half,
+      1 - (centre + half) <= Number.EPSILON ? 1 : centre + half,
+    ],
   };
 }
 
@@ -190,6 +193,8 @@ async function main(): Promise<void> {
   const scam = await read("messages-scam.jsonl");
   const legit = await read("messages-legit.jsonl");
   const business = await read("messages-business.jsonl");
+  const businessDev = await read("messages-business-dev.jsonl");
+  const businessHeldOut = await read("messages-business-heldout.jsonl");
   const realLegit = await read("messages-real-legit.jsonl");
   const injection = await read("injection.jsonl");
   const phishing = await read("links-phishing.jsonl");
@@ -197,7 +202,15 @@ async function main(): Promise<void> {
   const brand = await read("links-brand.jsonl");
   const runMetadata = await readJson(path.join(resultsDir, "run-metadata.json"));
 
-  const everything = [scam, legit, business, realLegit, injection].filter(
+  const everything = [
+    scam,
+    legit,
+    business,
+    businessDev,
+    businessHeldOut,
+    realLegit,
+    injection,
+  ].filter(
     (rows): rows is Row[] => rows !== null,
   );
   const recordedSpendUsd = everything
@@ -212,8 +225,12 @@ async function main(): Promise<void> {
       scam: scam && summarizeMessages(scam),
       uciLegit: legit && summarizeMessages(legit),
       publishedBusiness: business && summarizeMessages(business),
+      publishedBusinessHeldOut:
+        businessHeldOut && summarizeMessages(businessHeldOut),
       combinedLegit:
-        legit && business ? summarizeMessages([...legit, ...business]) : null,
+        legit && (businessHeldOut ?? business)
+          ? summarizeMessages([...legit, ...(businessHeldOut ?? business)!])
+          : null,
       realLegit: realLegit && summarizeMessages(realLegit),
     },
     links: {

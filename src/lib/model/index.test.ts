@@ -80,6 +80,27 @@ describe("readMessage", () => {
     expect(request.messages[0].content).toContain(
       "This website was set up 45 days ago.",
     );
+    expect(request.system).toContain(
+      "Genuine alerts often ask for a short keyword reply",
+    );
+    expect(request.system).toContain(
+      "Judge only actions the message explicitly requests",
+    );
+    expect(request.system).toContain(
+      "A warning not to share a code is protective",
+    );
+    expect(request.system).toContain(
+      "If no risky action is requested, choose none even when the message reports something alarming",
+    );
+    expect(request.system).toContain(
+      "use a link to verify, pay, sign in, claim money, or fix an unexpected problem",
+    );
+    expect(request.system).toContain(
+      "call an unfamiliar number supplied in the message to fix a problem",
+    );
+    expect(request.system).toContain(
+      "Do not flag a link merely because it appears with urgency",
+    );
   });
 
   it("caps explanations at 60 words", async () => {

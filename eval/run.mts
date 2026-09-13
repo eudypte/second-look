@@ -9,7 +9,8 @@
  * Usage:
  *   npx tsx --env-file=.env.local eval/run.mts <set...> [--limit N] [--concurrency N]
  *
- * Sets: scam, legit, business, real-legit, injection, links, all
+ * Sets: scam, legit, business, business-dev, business-heldout,
+ * real-legit, injection, links, all
  */
 import { AsyncLocalStorage } from "node:async_hooks";
 import { appendFile, mkdir, readFile, readdir } from "node:fs/promises";
@@ -250,6 +251,11 @@ interface MessageJob {
   extra?: Record<string, unknown>;
 }
 
+interface BusinessSplit {
+  dev: string[];
+  heldOut: string[];
+}
+
 async function runMessages(
   jobs: MessageJob[],
   outFile: string,
@@ -429,7 +435,7 @@ async function main(): Promise<void> {
 
   if (sets.length === 0) {
     throw new Error(
-      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|legit|business|real-legit|injection|links|all>",
+      "Usage: npx tsx --env-file=.env.local eval/run.mts <scam|legit|business|business-dev|business-heldout|real-legit|injection|links|all>",
     );
   }
 
@@ -493,6 +499,47 @@ async function main(): Promise<void> {
       budget,
       concurrency,
     );
+  }
+
+  if (wanted.has("business-dev") || wanted.has("business-heldout")) {
+    const rows = await readJsonl(path.join(EVAL_DIR, "business-texts.jsonl"));
+    const split = JSON.parse(
+      await readFile(path.join(EVAL_DIR, "business-split.json"), "utf8"),
+    ) as BusinessSplit;
+    const jobs = rows.map((row, index) => ({
+      id: `business-${index}`,
+      label: "legit",
+      text: String(row.text),
+      extra: {
+        category: row.category ?? null,
+        publisher: row.publisher ?? null,
+      },
+    }));
+    const allSplitIds = [...split.dev, ...split.heldOut];
+    const knownIds = new Set(jobs.map((job) => job.id));
+    if (
+      split.dev.length !== 30 ||
+      split.heldOut.length !== 30 ||
+      new Set(allSplitIds).size !== jobs.length ||
+      allSplitIds.some((id) => !knownIds.has(id))
+    ) {
+      throw new Error("business split must contain every record exactly once");
+    }
+
+    for (const partition of ["dev", "heldout"] as const) {
+      const setName = `business-${partition}`;
+      if (!wanted.has(setName)) continue;
+
+      const ids = new Set(partition === "dev" ? split.dev : split.heldOut);
+      const selected = jobs.filter((job) => ids.has(job.id));
+
+      await runMessages(
+        take(selected),
+        path.join(outDir, `messages-${setName}.jsonl`),
+        budget,
+        concurrency,
+      );
+    }
   }
 
   if (wanted.has("real-legit")) {
