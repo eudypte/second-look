@@ -4,7 +4,7 @@ Second Look helps non-technical people check a worrying text message and underst
 
 Live: [secondlook.selimd.me](https://secondlook.selimd.me)
 
-![A phone-width red result for a toll scam with an E-ZPass lookalike link](docs/screenshots/red-result.png)
+<p align="center"><img src="docs/screenshots/before.png" width="300" alt="An E-ZPass toll scam text pasted into Second Look, with a link to ezpass-toll.help, a $50 late fee, and a September 13 deadline"> <img src="docs/screenshots/after.png" width="300" alt="Second Look shows a red strong warning, saying the link is not E-ZPass's website"></p>
 
 ## Results
 
@@ -41,8 +41,6 @@ flowchart TD
 
 Evidence outranks the model, so a scam that claims to be "verified safe" cannot talk its way to a lower warning.
 The page never calls a message safe, legitimate, or verified; its lowest result is "No red flags found."
-
-![The same toll scam remains red after claiming to be verified safe](docs/screenshots/verified-safe.png)
 
 ## Privacy
 
